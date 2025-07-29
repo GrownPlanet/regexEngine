@@ -17,14 +17,9 @@ expands to:
 
 open RegexEngine
 
-let rec lex lexer =
-  match Lexer.next lexer with
-  | (None, _) -> ()
-  | (Some token, lexer) ->
-      Token.pp token;
-      lex lexer
-
 let () =
-  let input = "a(bb|cc)+a" in
+  (* let input = "a(bb|cc)+a" in *)
+  let input = "abc(d|e)" in
   let lexer = Lexer.init input in
-  lex lexer
+  let state = Parser.parse lexer in
+  Interpreter.interpret state "abcd"
