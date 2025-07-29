@@ -18,30 +18,3 @@ let set_split head next1 next2 =
   match head with
   | Split _ -> Split (next1, next2)
   | _ -> raise (StateError "expected a `Split` in `set_split`")
-
-let rec pp ?(indent=0) t =
-  let padding = String.make indent ' ' in
-  match t with
-  | Atom (c, next) ->
-      print_string (padding ^ "Char: ");
-      print_char c;
-      print_newline ();
-      (match next.ptr with
-      | Some t -> pp ~indent:indent t
-      | None -> ())
-  | Split (next1, next2) ->
-      print_endline (padding ^ "Split: ");
-      (match next1.ptr with
-      | Some t -> pp ~indent:(indent + 2) t
-      | None -> ());
-      print_endline (padding ^ "or");
-      (match next2.ptr with
-      | Some t -> pp ~indent:(indent + 2) t
-      | None -> ())
-  | Empty (next) ->
-      print_endline (padding ^ "Empty");
-      (match next.ptr with
-      | Some t -> pp ~indent:indent t
-      | None -> ())
-  | Match ->
-      print_endline (padding ^ "Match");
