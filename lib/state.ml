@@ -9,12 +9,14 @@ and t_ptr = { mutable ptr : t option }
 
 let set head next =
   match head with
-  | Atom (_, a_ptr) -> a_ptr.ptr <- Some next
+  | Atom (_, a) -> a.ptr <- Some next
   | Empty e -> e.ptr <- Some next
   | Split _ -> raise (StateError "`Split` needs two next pointers")
   | Match -> raise (StateError "`Match doesn't have a next pointer")
 
-let set_split head next1 next2 =
+let get_next head =
   match head with
-  | Split _ -> Split (next1, next2)
-  | _ -> raise (StateError "expected a `Split` in `set_split`")
+  | Atom (_, next) -> next.ptr
+  | Empty next -> next.ptr
+  | Split _ -> raise (StateError "`Split` has two next pointers")
+  | Match -> raise (StateError "`Match doesn't have a next pointer")

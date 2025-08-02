@@ -19,10 +19,8 @@ let match_state input state =
       let char = input.[state.idx] in
       if char = match_char then
         [{ state = Option.get next.ptr; idx = state.idx + 1 }]
-      else
-        []
-    else
-      []
+      else []
+    else []
   | State.Split (next1, next2) ->
     [
       { state = Option.get next1.ptr; idx = state.idx };
@@ -34,10 +32,10 @@ let match_state input state =
 
 let interpret state input =
   let rec helper states input =
-    let next_states = 
-      StateSet.fold 
-        (fun state acc -> (match_state input state) @ acc) 
-        states 
+    let next_states =
+      StateSet.fold
+        (fun state acc -> (match_state input state) @ acc)
+        states
         []
     in
     match next_states with
