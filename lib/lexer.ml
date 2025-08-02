@@ -14,8 +14,14 @@ let next t =
     match t.input.[t.idx] with
     | '(' -> (Some Token.LeftBracket, advance t)
     | ')' -> (Some Token.RightBracket, advance t)
-    | '|' -> (Some Token.Or, advance t)
+    | '|' -> (Some Token.Pipe, advance t)
     | '?' -> (Some Token.Question, advance t)
     | '*' -> (Some Token.Star, advance t)
     | '+' -> (Some Token.Plus, advance t)
+    | '\\' ->
+      let new_t = advance t in
+      if new_t.idx >= String.length t.input then
+        (None, new_t)
+      else
+        (Some (Token.Char new_t.input.[new_t.idx]), advance new_t)
     | ch -> (Some (Token.Char ch), advance t)

@@ -30,7 +30,7 @@ let match_state input state =
     ]
   | State.Empty (next) ->
     [{ state = Option.get next.ptr; idx = state.idx }]
-  | State.Match -> []
+  | State.Match -> [state]
 
 let interpret state input =
   let rec helper states input =

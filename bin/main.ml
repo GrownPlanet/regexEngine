@@ -10,19 +10,18 @@ let match_regex pattern input =
 let test_match_regex pattern input expected =
   let result = (match_regex pattern input) in
   if result = expected then
-    print_endline "test passed!"
+    print_endline "\027[32mtest passed!\027[0m"
   else
-    Printf.printf "test failed! \"%s\" on \"%s\" got %s but expected %s\n"
+    Printf.printf "\027[31mtest failed!\027[0m \"%s\" on \"%s\" got %s, but expected %s\n"
       pattern input
       (string_of_bool result)
-      (string_of_bool expected)
+      (string_of_bool expected);
 ;;
 
 let () =
   (* all thank chatgpt for writing these tests *)
   let test_cases = [
-    ("a|b", "b", true);
-    ("a|b", "c", false);
+    ("a(b(c))", "abc", true);
     ("(x|y)", "x", true);
     ("(x|y)", "z", false);
     ("(a|b|c)", "c", true);
@@ -35,6 +34,14 @@ let () =
     ("(1|2)(3|4)", "12", false);
     ("(yes|no)", "yes", true);
     ("(yes|no)", "maybe", false);
+    ("()", "this is a test", true);
+    ("", "this is a test", true);
+    ("(|)", "", true);
+    ("(a|)", "a", true);
+    ("(a|)", "", true);
+    ("(|a)", "", true);
+    ("(|a)", "a", true);
+    ("a\\(bc", "a(bc", true);
   ] in
   List.iter (fun (pattern, input, expected) ->
     test_match_regex pattern input expected

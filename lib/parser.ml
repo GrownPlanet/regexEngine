@@ -17,11 +17,7 @@ let push state t =
         state
   in
   let new_head = Option.value ~default:state t.head in
-  {
-    head = Some new_head;
-    last = Some new_last;
-    lexer = t.lexer;
-  }
+  { head = Some new_head; last = Some new_last; lexer = t.lexer }
 
 let combine_linear t1 t2 =
   let new_t1 = 
@@ -33,61 +29,55 @@ let combine_linear t1 t2 =
 
 let combine_split t1 t2 =
   let split = State.Split ({ ptr = t1.head }, { ptr = t2.head }) in
-  {
-    head = Some split;
-    last = t2.last;
-    lexer = t2.lexer;
-  }
+  { head = Some split; last = t2.last; lexer = t2.lexer }
 
 let change_lexer lexer t = { t with lexer = lexer }
 
-let parse_char char new_lexer t parse_next =
-  push (State.Atom (char, { ptr = None })) t
-  |> change_lexer new_lexer
-  |> parse_next
+let rec parse_internal lexer =
+  let t = init lexer in
+  parse_or t
 
-let rec parse_until_right_bracket t =
-  let token, lexer = Lexer.next t.lexer in
-  match token with
-  | Some (Char c) -> parse_char c lexer t parse_until_right_bracket
-  | Some RightBracket -> change_lexer lexer t
-  | Some LeftBracket -> pasre_left_bracket t lexer parse_until_right_bracket
-  | Some Or ->
-    let empty = State.Empty ({ ptr = None }) in
-    let t2 = 
-      init lexer
-      |> parse_until_right_bracket
-      |> push empty
-    in
+and parse_or t =
+  let next, lexer = Lexer.next t.lexer in
+  match next with
+  | Some (Token.Pipe) ->
+    let empty = State.Empty { ptr = None } in
     let t1 = push empty t in
+    let t2 = parse_internal lexer |> push empty in
     combine_split t1 t2
-  | None -> raise (ParseError "expected a `)`")
-  | _ -> raise (ParseError "not implemented yet")
-and pasre_left_bracket t lexer parse_next =
-  init lexer
-  |> parse_until_right_bracket
-  |> combine_linear t
-  |> parse_next
+  | _ -> parse_mult t
+
+and parse_mult t =
+  (* TODO
+  let atom = parse_atom t in
+  let next, lexer = Lexer.next atom.lexer in
+  match next with
+  | _ -> atom
+  *)
+  parse_atom t
+
+and parse_atom t =
+  let next, lexer = Lexer.next t.lexer in
+  match next with
+  | Some (Token.Char ch) ->
+    let atom = State.Atom (ch, { ptr = None }) in
+    push atom t 
+    |> change_lexer lexer
+    |> parse_or
+  | Some (Token.LeftBracket) ->
+    let new_t = parse_internal lexer in
+    let next, lexer = Lexer.next new_t.lexer in
+    if next = Some Token.RightBracket then
+      combine_linear t new_t 
+      |> change_lexer lexer
+      |> parse_or
+    else
+      raise (ParseError "expected `)` after `(`")
+  | Some (Token.RightBracket) -> t
+  | None -> change_lexer lexer t
+  | _ -> parse_or t
 
 let parse lexer =
-  let rec parse_intern t =
-    let token, lexer = Lexer.next t.lexer in
-    match token with
-    | None -> push State.Match t |> change_lexer lexer
-    | Some (Char c) -> parse_char c lexer t parse_intern
-    | Some LeftBracket -> pasre_left_bracket t lexer parse_intern
-    | Some Or ->
-      let t2 = parse_intern (init lexer) in
-      let t1 = 
-        match t2.last with
-        | Some last -> push last t
-        | None -> t
-      in
-      combine_split t1 t2
-    | Some RightBracket -> raise (ParseError "unexpected `)`")
-    | _ -> raise (ParseError "not implemented yet")
-  in
-  let t = parse_intern (init lexer) in
-  match t.head with
-  | Some head -> head
-  | None -> raise (ParseError "unreachable")
+  let t = parse_internal lexer |> push State.Match in
+  (* can't be `None` because we pushed just pushed Match to it *)
+  Option.get t.head
