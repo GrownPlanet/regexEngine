@@ -23,6 +23,7 @@ let () =
   (* all thank chatgpt for writing these tests *)
   let test_cases = [
     ("a(b(c))", "abc", true);
+    ("abc", "abcdefg", false);
     ("(x|y)", "x", true);
     ("(x|y)", "z", false);
     ("(a|b|c)", "c", true);
@@ -35,8 +36,8 @@ let () =
     ("(1|2)(3|4)", "12", false);
     ("(yes|no)", "yes", true);
     ("(yes|no)", "maybe", false);
-    ("()", "this is a test", true);
-    ("", "this is a test", true);
+    ("(this is a test)", "this is a test", true);
+    ("()", "this is a test", false);
     ("(|)", "", true);
     ("(a|)", "a", true);
     ("(a|)", "", true);
@@ -61,11 +62,3 @@ let () =
     ) (0, 0) test_cases
   in
   Printf.printf "\n%d test cases succeeded and %d cases failed\n" succeeded failed
-  (*
-  in
-  printf.Printg
-
-  List.iter (fun (pattern, input, expected) ->
-    test_match_regex pattern input expected
-  ) test_cases
-  *)

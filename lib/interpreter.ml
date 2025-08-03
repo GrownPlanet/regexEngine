@@ -12,6 +12,8 @@ end
 
 module StateSet = Set.Make(StateOrdered)
 
+let is_at_end t input = t.idx = String.length input
+
 let match_state input state =
   match state.state with
   | State.Atom (match_char, next) ->
@@ -28,7 +30,7 @@ let match_state input state =
     ]
   | State.Empty (next) ->
     [{ state = Option.get next.ptr; idx = state.idx }]
-  | State.Match -> [state]
+  | State.Match -> []
 
 let interpret state input =
   let rec helper states input =
@@ -42,7 +44,7 @@ let interpret state input =
     | [] -> false
     | _ ->
       let next_states_set = StateSet.of_list next_states in
-      if StateSet.exists (fun t -> t.state = State.Match) next_states_set then
+      if StateSet.exists (fun t -> t.state = State.Match && is_at_end t input) next_states_set then
         true
       else
         helper next_states_set input
