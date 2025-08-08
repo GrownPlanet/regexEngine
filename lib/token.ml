@@ -5,5 +5,4 @@ type t =
   | Pipe
   | Question
   | Star
-  (* TODO *)
   | Plus

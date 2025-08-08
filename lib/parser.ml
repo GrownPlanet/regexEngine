@@ -45,15 +45,15 @@ and parse_or t =
   | _ -> parse_mult t
 
 and parse_mult t =
+  let get_start t =
+    match t.previous with
+    | Some previous -> Option.get (State.get_next previous)
+    | None -> Option.get t.head
+  in
   let update_last t state =
     match t.last with
     | Some last -> State.set last state
     | None -> raise (ParseError "multiplier requires a preceding expression")
-  in
-  let make_next t =
-    match t.previous with
-    | Some previous -> Option.get (State.get_next previous)
-    | None -> Option.get t.head
   in
   let make_state t lexer split empty =
     match t.previous with
@@ -63,21 +63,26 @@ and parse_mult t =
     | None ->
       { head = Some split; previous = None; last = Some empty; lexer = lexer }
   in
+  let get_start_empty_split t =
+    let start = get_start t in
+    let empty = State.Empty { ptr = None } in
+    let split = State.Split ( { ptr = Some empty }, { ptr = Some start }) in
+    (start, empty, split)
+  in
   let next, lexer = Lexer.next t.lexer in
   match next with
   | Some Question -> 
-    let empty = State.Empty { ptr = None } in
+    let (_, empty, split) = get_start_empty_split t in
     update_last t empty;
-    let next = make_next t in
-    let split = State.Split ( { ptr = Some empty }, { ptr = Some next }) in
     make_state t lexer split empty |> parse_or
   | Some Star ->
-    let split = State.Split ({ ptr = None }, { ptr = None }) in
-    let empty = State.Empty { ptr = None } in
+    let (_, empty, split) = get_start_empty_split t in
     update_last t split;
-    let next = make_next t in
-    State.set_split split empty next;
     make_state t lexer split empty |> parse_or
+  | Some Plus ->
+    let (start, empty, split) = get_start_empty_split t in
+    update_last t split;
+    make_state t lexer start empty |> parse_or
   | _ -> parse_atom t
 
 and parse_atom t =
