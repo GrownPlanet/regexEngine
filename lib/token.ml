@@ -3,7 +3,7 @@ type t =
   | LeftBracket
   | RightBracket
   | Pipe
-  (* TODO *)
   | Question
   | Star
+  (* TODO *)
   | Plus

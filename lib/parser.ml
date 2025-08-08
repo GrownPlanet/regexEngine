@@ -45,34 +45,39 @@ and parse_or t =
   | _ -> parse_mult t
 
 and parse_mult t =
-  let insert_split t lexer =
-    let empty = State.Empty { ptr = None } in
-    (match t.last with
-    | Some last -> State.set last empty
-    | None -> raise (ParseError "'?' requires a preceding expression"));
-    (match t.previous with
-    | Some previous ->
-        let next = Option.get (State.get_next previous) in
-        let split = State.Split ( { ptr = Some empty }, { ptr = Some next }) in
-        {
-          (push split { t with last = t.previous; lexer })
-          with last = Some empty
-        }
+  let update_last t state =
+    match t.last with
+    | Some last -> State.set last state
+    | None -> raise (ParseError "multiplier requires a preceding expression")
+  in
+  let make_next t =
+    match t.previous with
+    | Some previous -> Option.get (State.get_next previous)
+    | None -> Option.get t.head
+  in
+  let make_state t lexer split empty =
+    match t.previous with
+    | Some _ ->
+      push split { t with last = t.previous; lexer }
+      |> fun result -> { result with last = Some empty }
     | None ->
-        let next = Option.get t.head in
-        let split = State.Split ( { ptr = Some empty }, { ptr = Some next }) in
-        {
-          head = Some split;
-          previous = None;
-          last = Some empty;
-          lexer = lexer;
-        })
+      { head = Some split; previous = None; last = Some empty; lexer = lexer }
   in
   let next, lexer = Lexer.next t.lexer in
   match next with
-  | Some Question ->
-    insert_split t lexer
-    |> parse_or
+  | Some Question -> 
+    let empty = State.Empty { ptr = None } in
+    update_last t empty;
+    let next = make_next t in
+    let split = State.Split ( { ptr = Some empty }, { ptr = Some next }) in
+    make_state t lexer split empty |> parse_or
+  | Some Star ->
+    let split = State.Split ({ ptr = None }, { ptr = None }) in
+    let empty = State.Empty { ptr = None } in
+    update_last t split;
+    let next = make_next t in
+    State.set_split split empty next;
+    make_state t lexer split empty |> parse_or
   | _ -> parse_atom t
 
 and parse_atom t =

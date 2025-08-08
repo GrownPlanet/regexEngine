@@ -52,6 +52,11 @@ let () =
     ("ab?c", "abbc", false);
     ("a(bc)?d", "ad", true);
     ("a(b|c)?d", "acd", true);
+    ("a*", "", true);
+    ("a*", "a", true);
+    ("a*", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", true);
+    ("a*b", "aab", true);
+    ("ab*c", "abbbbbbbbbbbbc", true);
     (* the example from the article *)
     ("a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", true);
   ] in
