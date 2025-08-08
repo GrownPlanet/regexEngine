@@ -32,17 +32,14 @@ let match_state input state =
       { state = Option.get next1.ptr; idx = state.idx };
       { state = Option.get next2.ptr; idx = state.idx }
     ]
-  | State.Empty (next) ->
+  | State.Empty next ->
     [{ state = Option.get next.ptr; idx = state.idx }]
   | State.Match -> []
 
 let interpret state input =
   let rec helper states input =
-    let next_states =
-      StateSet.fold
-        (fun state acc -> (match_state input state) @ acc)
-        states
-        []
+    let next_states = StateSet.fold
+        (fun state acc -> (match_state input state) @ acc) states []
     in
     match next_states with
     | [] -> false
@@ -54,8 +51,5 @@ let interpret state input =
         helper next_states_set input
   in
   let set = StateSet.empty in
-  let idx_state = {
-    state = state;
-    idx = 0;
-  } in
+  let idx_state = { state = state; idx = 0 } in
   helper (StateSet.add idx_state set) input

@@ -7,7 +7,7 @@ type t = {
   lexer : Lexer.t;
 }
 
-let init lexer = { head = None; previous = None; last = None; lexer = lexer }
+let init lexer = { head = None; previous = None; last = None; lexer }
 
 let push state t =
   (match t.last with
@@ -45,7 +45,7 @@ and parse_or t =
   | _ -> parse_mult t
 
 and parse_mult t =
-  let get_start t =
+  let get_first t =
     match t.previous with
     | Some previous -> Option.get (State.get_next previous)
     | None -> Option.get t.head
@@ -55,34 +55,34 @@ and parse_mult t =
     | Some last -> State.set last state
     | None -> raise (ParseError "multiplier requires a preceding expression")
   in
-  let make_state t lexer split empty =
+  let make_state t lexer split last =
     match t.previous with
     | Some _ ->
       push split { t with last = t.previous; lexer }
-      |> fun result -> { result with last = Some empty }
+      |> fun result -> { result with last = Some last }
     | None ->
-      { head = Some split; previous = None; last = Some empty; lexer = lexer }
+      { head = Some split; previous = None; last = Some last; lexer = lexer }
   in
-  let get_start_empty_split t =
-    let start = get_start t in
-    let empty = State.Empty { ptr = None } in
-    let split = State.Split ( { ptr = Some empty }, { ptr = Some start }) in
-    (start, empty, split)
+  let get_first_last_split t =
+    let first = get_first t in
+    let last = State.Empty { ptr = None } in
+    let split = State.Split ({ ptr = Some last }, { ptr = Some first }) in
+    (first, last, split)
   in
   let next, lexer = Lexer.next t.lexer in
   match next with
   | Some Question -> 
-    let (_, empty, split) = get_start_empty_split t in
-    update_last t empty;
-    make_state t lexer split empty |> parse_or
+    let (_, last, split) = get_first_last_split t in
+    update_last t last;
+    make_state t lexer split last |> parse_or
   | Some Star ->
-    let (_, empty, split) = get_start_empty_split t in
+    let (_, last, split) = get_first_last_split t in
     update_last t split;
-    make_state t lexer split empty |> parse_or
+    make_state t lexer split last |> parse_or
   | Some Plus ->
-    let (start, empty, split) = get_start_empty_split t in
+    let (first, last, split) = get_first_last_split t in
     update_last t split;
-    make_state t lexer start empty |> parse_or
+    make_state t lexer first last |> parse_or
   | _ -> parse_atom t
 
 and parse_atom t =

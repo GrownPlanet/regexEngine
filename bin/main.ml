@@ -8,16 +8,15 @@ let match_regex pattern input =
   Interpreter.interpret state input
 
 let test_match_regex pattern input expected =
-  let result = (match_regex pattern input) in
-  if result = expected then
-    (print_endline "\027[32mtest passed!\027[0m";
-      true)
-  else
-    (Printf.printf "\027[31mtest failed!\027[0m \"%s\" on \"%s\" got %s, but expected %s\n"
-      pattern input
-      (string_of_bool result)
-      (string_of_bool expected);
-      false)
+  let result = match_regex pattern input in
+  if result = expected then (
+    print_endline "\027[32mtest passed!\027[0m";
+    true)
+  else (
+    Printf.printf
+      "\027[31mtest failed!\027[0m \"%s\" on \"%s\" got %s, but expected %s\n"
+      pattern input (string_of_bool result) (string_of_bool expected);
+    false)
 
 let () =
   (* all thank chatgpt for writing these tests *)
