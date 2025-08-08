@@ -11,13 +11,13 @@ let test_match_regex pattern input expected =
   let result = (match_regex pattern input) in
   if result = expected then
     (print_endline "\027[32mtest passed!\027[0m";
-    true)
+      true)
   else
     (Printf.printf "\027[31mtest failed!\027[0m \"%s\" on \"%s\" got %s, but expected %s\n"
       pattern input
       (string_of_bool result)
       (string_of_bool expected);
-    false)
+      false)
 
 let () =
   (* all thank chatgpt for writing these tests *)
@@ -63,6 +63,10 @@ let () =
     ("a+b", "aab", true);
     ("(ab)+c", "abbbbbbbbbbbbc", false);
     ("(ab)+c", "ababababc", true);
+    ("here goes .*anything", "here goes anything", true);
+    ("here goes .* anything", "here goes something mayb nothing anything", true);
+    ("here goes .* anything", "here goes ukcuf89pfasd78907*** anything", true);
+    ("here goes .* anything", "here goes fdasdjnkljhl anything", true);
     (* the example from the article *)
     ("a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", true);
   ] in

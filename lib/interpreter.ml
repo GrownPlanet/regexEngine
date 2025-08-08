@@ -16,12 +16,16 @@ let is_at_end t input = t.idx = String.length input
 
 let match_state input state =
   match state.state with
-  | State.Atom (match_char, next) ->
+  | State.Atom (match_atom, next) ->
     if state.idx < String.length input then
       let char = input.[state.idx] in
-      if char = match_char then
+      match match_atom with
+      | State.Char match_char ->
+        if char = match_char then
+          [{ state = Option.get next.ptr; idx = state.idx + 1 }]
+        else []
+      | State.WildCard ->
         [{ state = Option.get next.ptr; idx = state.idx + 1 }]
-      else []
     else []
   | State.Split (next1, next2) ->
     [

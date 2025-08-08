@@ -11,8 +11,8 @@ let init lexer = { head = None; previous = None; last = None; lexer = lexer }
 
 let push state t =
   (match t.last with
-  | Some last -> State.set last state
-  | None -> ());
+    | Some last -> State.set last state
+    | None -> ());
   let new_head = Some (Option.value ~default:state t.head) in
   { head = new_head; previous = t.last; last = Some state; lexer = t.lexer }
 
@@ -89,7 +89,10 @@ and parse_atom t =
   let next, lexer = Lexer.next t.lexer in
   match next with
   | Some Token.Char ch ->
-    let atom = State.Atom (ch, { ptr = None }) in
+    let atom = State.Atom (State.Char ch, { ptr = None }) in
+    push atom t |> change_lexer lexer |> parse_or
+  | Some Token.WildCard ->
+    let atom = State.Atom (State.WildCard, { ptr = None }) in
     push atom t |> change_lexer lexer |> parse_or
   | Some Token.LeftBracket ->
     let new_t = parse_internal lexer in

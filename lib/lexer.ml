@@ -24,4 +24,5 @@ let next t =
         (None, new_t)
       else
         (Some (Token.Char new_t.input.[new_t.idx]), advance new_t)
+    | '.' -> (Some Token.WildCard, advance t)
     | ch -> (Some (Token.Char ch), advance t)

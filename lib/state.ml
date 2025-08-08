@@ -1,10 +1,14 @@
 exception StateError of string
 
+type atom =
+  | Char of char
+  | WildCard
+
 type t =
-| Atom of char * t_ptr
-| Split of t_ptr * t_ptr
-| Empty of t_ptr
-| Match
+  | Atom of atom * t_ptr
+  | Split of t_ptr * t_ptr
+  | Empty of t_ptr
+  | Match
 and t_ptr = { mutable ptr : t option }
 
 let set head next =
