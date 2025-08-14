@@ -15,17 +15,20 @@ module StateSet = Set.Make(StateOrdered)
 let is_at_end t input = t.idx = String.length input
 
 let match_state input state =
+  let match_atom atom char (next: State.t_ptr) =
+    match atom with
+    | State.Char match_char ->
+      if char = match_char then
+        [{ state = Option.get next.ptr; idx = state.idx + 1}]
+      else []
+    | State.WildCard ->
+      [{ state = Option.get next.ptr; idx = state.idx + 1}]
+  in
   match state.state with
-  | State.Atom (match_atom, next) ->
+  | State.Atom (atom, next) ->
     if state.idx < String.length input then
       let char = input.[state.idx] in
-      match match_atom with
-      | State.Char match_char ->
-        if char = match_char then
-          [{ state = Option.get next.ptr; idx = state.idx + 1 }]
-        else []
-      | State.WildCard ->
-        [{ state = Option.get next.ptr; idx = state.idx + 1 }]
+      match_atom atom char next
     else []
   | State.Split (next1, next2) ->
     [
@@ -37,19 +40,29 @@ let match_state input state =
   | State.Match -> []
 
 let interpret state input =
-  let rec helper states input =
-    let next_states = StateSet.fold
-        (fun state acc -> (match_state input state) @ acc) states []
+  let rec helper input memoization states =
+    let next_states =
+        (List.concat_map (match_state input) states)
+        |> List.filter (fun state -> not (StateSet.mem state memoization))
     in
     match next_states with
     | [] -> false
     | _ ->
-      let next_states_set = StateSet.of_list next_states in
-      if StateSet.exists (fun t -> t.state = State.Match && is_at_end t input) next_states_set then
+      let new_memoization =
+        List.fold_left
+          (fun acc state -> StateSet.add state acc)
+          memoization
+          next_states
+      in
+      let deduped_states = StateSet.to_list (StateSet.of_list next_states) in
+      if List.exists
+          (fun t -> t.state = State.Match && is_at_end t input)
+          deduped_states
+      then
         true
       else
-        helper next_states_set input
+        helper input new_memoization deduped_states
   in
-  let set = StateSet.empty in
   let idx_state = { state = state; idx = 0 } in
-  helper (StateSet.add idx_state set) input
+  let mem = StateSet.singleton idx_state in
+  helper input mem [idx_state]

@@ -21,6 +21,8 @@ let test_match_regex pattern input expected =
 let () =
   (* all thank chatgpt for writing these tests *)
   let test_cases = [
+    ("a", "a", true);
+    ("a(b(c))", "abc", true);
     ("a(b(c))", "abc", true);
     ("abc", "abcdefg", false);
     ("(x|y)", "x", true);
@@ -66,8 +68,10 @@ let () =
     ("here goes .* anything", "here goes something mayb nothing anything", true);
     ("here goes .* anything", "here goes ukcuf89pfasd78907*** anything", true);
     ("here goes .* anything", "here goes fdasdjnkljhl anything", true);
+    ("a?+", "ab", false);
+    ("a?+", "", true);
     (* the example from the article *)
-    ("a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaaaaaaaaaa", true);
+    ("a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaa", true);
   ] in
   let succeeded, failed = List.fold_left
     (fun (succeeded, failed) (pattern, input, expected) ->
