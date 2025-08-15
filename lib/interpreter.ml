@@ -15,14 +15,27 @@ module StateSet = Set.Make(StateOrdered)
 let is_at_end t input = t.idx = String.length input
 
 let match_state input state =
+  let is_in_range char first last =
+    let num = int_of_char char in
+    num >= (int_of_char first) && num <= (int_of_char last)
+  in
   let match_atom atom char (next: State.t_ptr) =
+    let new_state = [{ state = Option.get next.ptr; idx = state.idx + 1 }] in
     match atom with
     | State.Char match_char ->
-      if char = match_char then
-        [{ state = Option.get next.ptr; idx = state.idx + 1}]
-      else []
-    | State.WildCard ->
-      [{ state = Option.get next.ptr; idx = state.idx + 1}]
+      if char = match_char then new_state else []
+    | State.WildCard -> new_state
+    | State.Word ->
+      if is_in_range char 'A' 'Z' || is_in_range char 'a' 'z' then
+        new_state
+      else
+        []
+    | State.Digit ->
+      if is_in_range char '0' '9' then new_state else []
+    | State.Whitespace ->
+      match char with
+      | ' ' | '\n' | '\t' | '\r' -> new_state
+      | _ -> []
   in
   match state.state with
   | State.Atom (atom, next) ->

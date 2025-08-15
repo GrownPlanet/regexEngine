@@ -69,7 +69,9 @@ let () =
     ("here goes .* anything", "here goes ukcuf89pfasd78907*** anything", true);
     ("here goes .* anything", "here goes fdasdjnkljhl anything", true);
     ("a?+", "ab", false);
-    ("a?+", "", true);
+    ("(a|xx)+", "aaaaxaaa", false);
+    ("(a|xx)+", "aaaaxxaaa", true);
+    ("\\w+\\s+\\d+", "word \n\t  9832", true);
     (* the example from the article *)
     ("a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaa", true);
   ] in

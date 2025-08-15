@@ -86,14 +86,17 @@ and parse_mult t =
   | _ -> parse_atom t
 
 and parse_atom t =
+  let handle_atom t lexer state =
+    let atom = State.Atom (state, { ptr = None }) in
+    push atom t |> change_lexer lexer |> parse_or
+  in
   let next, lexer = Lexer.next t.lexer in
   match next with
-  | Some Token.Char ch ->
-    let atom = State.Atom (State.Char ch, { ptr = None }) in
-    push atom t |> change_lexer lexer |> parse_or
-  | Some Token.WildCard ->
-    let atom = State.Atom (State.WildCard, { ptr = None }) in
-    push atom t |> change_lexer lexer |> parse_or
+  | Some Token.Char ch -> handle_atom t lexer (State.Char ch)
+  | Some Token.WildCard -> handle_atom t lexer State.WildCard
+  | Some Token.Digit -> handle_atom t lexer State.Digit
+  | Some Token.Whitespace -> handle_atom t lexer State.Whitespace
+  | Some Token.Word -> handle_atom t lexer State.Word
   | Some Token.LeftBracket ->
     let new_t = parse_internal lexer in
     let next, lexer = Lexer.next new_t.lexer in

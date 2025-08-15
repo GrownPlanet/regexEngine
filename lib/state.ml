@@ -2,6 +2,9 @@ exception StateError of string
 
 type atom =
   | Char of char
+  | Word
+  | Whitespace
+  | Digit
   | WildCard
 
 type t =
@@ -24,13 +27,3 @@ let get_next head =
   | Empty next -> next.ptr
   | Split _ -> raise (StateError "`Split` has two next pointers")
   | Match -> raise (StateError "`Match doesn't have a next pointer")
-
-let pp state =
-  match state with
-  | Atom (c, _) -> print_string "atom ";
-    (match c with
-    | Char c -> print_char c
-    | WildCard -> print_char '*');
-  | Split _ -> print_string "split"
-  | Empty _ -> print_string "empty"
-  | Match -> print_string "match"
