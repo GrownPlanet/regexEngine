@@ -6,6 +6,7 @@ type atom =
   | Whitespace
   | Digit
   | WildCard
+  | CharClass of Token.t list
 
 type t =
   | Atom of atom * t_ptr
@@ -18,12 +19,12 @@ let set head next =
   match head with
   | Atom (_, a) -> a.ptr <- Some next
   | Empty e -> e.ptr <- Some next
-  | Split _ -> raise (StateError "`Split` needs two next pointers")
-  | Match -> raise (StateError "`Match doesn't have a next pointer")
+  | Split _ -> raise (StateError "'Split' needs two next pointers")
+  | Match -> raise (StateError "'Match doesn't have a next pointer")
 
 let get_next head =
   match head with
   | Atom (_, next) -> next.ptr
   | Empty next -> next.ptr
-  | Split _ -> raise (StateError "`Split` has two next pointers")
-  | Match -> raise (StateError "`Match doesn't have a next pointer")
+  | Split _ -> raise (StateError "'Split' has two next pointers")
+  | Match -> raise (StateError "'Match' doesn't have a next pointer")

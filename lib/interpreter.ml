@@ -14,6 +14,19 @@ module StateSet = Set.Make(StateOrdered)
 
 let is_at_end t input = t.idx = String.length input
 
+let rec match_char_class char tokens =
+  match tokens with
+  | [] -> false
+  | token :: tail ->
+    match token with
+    | Token.Char match_char ->
+      if char = match_char then
+        true 
+      else
+        match_char_class char tail
+    | _ ->
+      raise (InterpretError "internal: got unexpected token in 'CharClass'")
+
 let match_state input state =
   let is_in_range char first last =
     let num = int_of_char char in
@@ -33,9 +46,11 @@ let match_state input state =
     | State.Digit ->
       if is_in_range char '0' '9' then new_state else []
     | State.Whitespace ->
-      match char with
+      (match char with
       | ' ' | '\n' | '\t' | '\r' -> new_state
-      | _ -> []
+      | _ -> [])
+    | State.CharClass tokens ->
+      if match_char_class char tokens then new_state else []
   in
   match state.state with
   | State.Atom (atom, next) ->

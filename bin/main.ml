@@ -72,6 +72,11 @@ let () =
     ("(a|xx)+", "aaaaxaaa", false);
     ("(a|xx)+", "aaaaxxaaa", true);
     ("\\w+\\s+\\d+", "word \n\t  9832", true);
+    ("[abc|]", "a", true);
+    ("[abc|]", "b", true);
+    ("[abc|]", "|", true);
+    ("[abc|]", "d", false);
+    ("[abc|]+", "ab|b", true);
     (* the example from the article *)
     ("a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaa", true);
   ] in

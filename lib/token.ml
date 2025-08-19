@@ -4,6 +4,8 @@ type t =
   | Digit
   | Whitespace
   | WildCard
+  | LeftParenthese
+  | RightParenthese
   | LeftBracket
   | RightBracket
   | Pipe

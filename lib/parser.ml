@@ -90,6 +90,14 @@ and parse_atom t =
     let atom = State.Atom (state, { ptr = None }) in
     push atom t |> change_lexer lexer |> parse_or
   in
+  let rec parse_character_class acc t =
+    let next, lexer = Lexer.next_char_class t.lexer in
+    match next with
+    | Some Token.RightBracket -> (change_lexer lexer t, acc)
+    | Some token ->
+      change_lexer lexer t |> parse_character_class (token :: acc)
+    | None -> raise (ParseError "expected a ']' after a '['")
+  in
   let next, lexer = Lexer.next t.lexer in
   match next with
   | Some Token.Char ch -> handle_atom t lexer (State.Char ch)
@@ -97,13 +105,18 @@ and parse_atom t =
   | Some Token.Digit -> handle_atom t lexer State.Digit
   | Some Token.Whitespace -> handle_atom t lexer State.Whitespace
   | Some Token.Word -> handle_atom t lexer State.Word
-  | Some Token.LeftBracket ->
+  | Some Token.LeftParenthese ->
     let new_t = parse_internal lexer in
     let next, lexer = Lexer.next new_t.lexer in
-    if next = Some Token.RightBracket then
+    if next = Some Token.RightParenthese then
       combine_linear t new_t |> change_lexer lexer |> parse_or
     else
-      raise (ParseError "expected `)` after `(`")
+      raise (ParseError "expected ')' after '('")
+  | Some Token.RightParenthese -> t
+  | Some Token.LeftBracket ->
+    let t, list = change_lexer lexer t |> parse_character_class [] in
+    let atom = State.Atom ((State.CharClass list), { ptr = None }) in
+    push atom t |> parse_or
   | Some Token.RightBracket -> t
   | None -> change_lexer lexer t
   | _ -> parse_or t
