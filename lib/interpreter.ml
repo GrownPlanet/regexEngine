@@ -51,6 +51,8 @@ let match_state input state =
       | _ -> [])
     | State.CharClass tokens ->
       if match_char_class char tokens then new_state else []
+    | State.NotCharClass tokens ->
+      if match_char_class char tokens then [] else new_state
   in
   match state.state with
   | State.Atom (atom, next) ->

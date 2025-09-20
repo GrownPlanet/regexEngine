@@ -7,6 +7,7 @@ type atom =
   | Digit
   | WildCard
   | CharClass of Token.t list
+  | NotCharClass of Token.t list
 
 type t =
   | Atom of atom * t_ptr

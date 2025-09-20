@@ -77,6 +77,9 @@ let () =
     ("[abc|]", "|", true);
     ("[abc|]", "d", false);
     ("[abc|]+", "ab|b", true);
+    ("[^abc]+", "everything exept the three foridden letters!", true);
+    ("[^~!@#$%^&*()[\\]]+", "the forbidden *top row*", false);
+    ("[^~!@#$%^&*()[\\]]+!", "the forbidden -top row-!", true);
     (* the example from the article *)
     ("a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?a?aaaaaaaaaaaaaaaaaaaaa", "aaaaaaaaaaaaaaaaaaaaa", true);
   ] in
